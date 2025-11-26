@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+</head>
+
+<body style="text-align: center; background-color: #222; color: white;">
+    <div style="padding: 3% 5%;">
+        <h2>Little Red Riding Hood</h2>
+        <div style="display: flex; justify-content: center;">
+            <canvas id="gameCanvas" style="background-color: black; border: 2px solid #fff;" width="960"
+                height="480"></canvas>
+            <div style="width: 5%;"></div>
+            <div style="background-color: #333; width: 20%;">
+                <h4>Inventory</h4>
+                <hr style="margin: 0 10%;">
+                <div style="margin: 10%; padding: 5%; background-color: rgba(255, 255, 255, 0.4);">
+                    <table style="width:100%">
+                        <tr>
+                            <td style="text-align: left;">Flowers</td>
+                            <td id="flower_num" style="text-align: right;">0</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;">Bread</td>
+                            <td id="bread_num" style="text-align: right;">0</td>
+                        </tr>
+                    </table>
+                </div>
+                <p id="msg" style="margin: 10%">*ต้องการดอกไม้ 10 ดอกและขนมปัง 5 ก้อน เพื่อไปเยี่ยมคุณยาย</p>
+            </div>
+        </div>
+        <p>ใช้ปุ่มลูกศรเพื่อเคลื่อนที่ และกด <b>Space</b> เพื่อเก็บไอเทม</p>
+    </div>
+</body>
+<script>
+    class Prototype {
+        clone() {
+            throw new Error("this method must be implement")
+        }
+    }
+
+    class Tile extends Prototype {
+        constructor(type, walkable, color) {
+            super()
+            this.type = type
+            this.walkable = walkable
+            this.color = color
+        }
+
+        clone() {
+            return new Tile(this.type, this.walkable, this.color);
+        }
+    }
+
+    class Item extends Prototype {
+        constructor(name, canStored, emoji) {
+            super()
+            this.name = name
+            this.canStored = canStored
+            this.emoji = emoji
+        }
+
+        clone() {
+            return new Item(this.name, this.canStored, this.emoji);
+        }
+    }
+
+    class MapComponent {
+        render() {
+            throw new Error("this method must be implement")
+        }
+    }
+
+    class Map extends MapComponent {
+        constructor() {
+            super()
+            this.component = []
+        }
+
+        add(component) {
+            this.component.push(component)
+        }
+
+        render() {
+            this.component.forEach(c => c.render())
+        }
+    }
+
+    class MapElement extends MapComponent {
+        constructor(x, y, tile, item = null) {
+            super()
+            this.x = x
+            this.y = y
+            this.tile = tile
+            this.item = item
+        }
+
+        render() {
+            canvasContext.fillStyle = this.tile.color
+            canvasContext.fillRect(this.x * tile_size, this.y * tile_size, tile_size, tile_size)
+            if (this.item) {
+                canvasContext.font = `${tile_size - 4}px serif`;
+                canvasContext.textAlign = "center";
+                canvasContext.textBaseline = "middle";
+                canvasContext.fillText(this.item.emoji, this.x * tile_size + tile_size / 2, this.y * tile_size + tile_size / 2);
+            }
+        }
+    }
+
+    class Command {
+        execute() { }
+    }
+
+    class MoveCommand extends Command {
+        constructor(player, dx, dy) {
+            super()
+            this.player = player
+            this.dx = dx
+            this.dy = dy
+        }
+
+        execute() {
+            this.player.move(this.dx, this.dy)
+        }
+    }
+
+    class PickUpCommand extends Command {
+        constructor(player, mapComposite) {
+            super()
+            this.player = player
+            this.mapComposite = mapComposite
+        }
+
+        execute() {
+            this.player.pickUp(this.mapComposite)
+        }
+    }
+
+    class InputHandler {
+        constructor(player, mapComposite) {
+            this.commands = {
+                "ArrowUp": new MoveCommand(player, 0, -1),
+                "ArrowDown": new MoveCommand(player, 0, 1),
+                "ArrowLeft": new MoveCommand(player, -1, 0),
+                "ArrowRight": new MoveCommand(player, 1, 0),
+                "Space": new PickUpCommand(player, mapComposite)
+            }
+        }
+
+        handleInput(key) {
+            if (this.commands[key]) {
+                this.commands[key].execute()
+            }
+        }
+    }
+
+    class Player {
+        constructor(x, y) {
+            this.x = x
+            this.y = y
+            this.inventory = new Inventory()
+        }
+
+        move(dx, dy) {
+            const newX = this.x + dx
+            const newY = this.y + dy
+            if (newX >= 0 && newX < map_size_X && newY >= 0 && newY < map_size_Y) {
+                const tile = mapGrid[newY][newX].tile
+                if (tile.walkable) {
+                    this.x = newX
+                    this.y = newY
+                }
+            }
+        }
+
+        pickUp(mapComposite) {
+            const element = mapGrid[this.y][this.x]
+            if (element.item && element.item.canStored) {
+                if (element.item.name === "house") {
+                    if (this.inventory.getCount("flower") >= 10 && this.inventory.getCount("bread") >= 5) {
+                        this.inventory.removeItem("flower", 10)
+                        this.inventory.removeItem("bread", 5)
+                        updateInventoryUI()
+                        alert("MISSION COMPLETE!")
+                        return
+                    }else{
+                        alert("ITEM NEEDED!")
+                        return
+                    }
+                }
+                this.inventory.add(element.item)
+                element.item = null
+                updateInventoryUI()
+            }
+        }
+
+        render() {
+            canvasContext.font = `${tile_size - 4}px serif`;
+            canvasContext.textAlign = "center";
+            canvasContext.textBaseline = "middle";
+            canvasContext.fillText("👧", this.x * tile_size + tile_size / 2, this.y * tile_size + tile_size / 2);
+        }
+    }
+
+    class Inventory {
+        constructor() {
+            this.items = []
+        }
+
+        add(item) {
+            this.items.push(item)
+        }
+
+        getCount(name) {
+            return this.items.filter(i => i.name === name).length
+        }
+
+        removeItem(name, count) {
+            let remove = 0
+            this.items = this.items.filter(i => {
+                if (i.name === name && remove < count) {
+                    remove++
+                    return false
+                }
+                return true
+            })
+            return remove === count
+        }
+    }
+
+    const grassTile = new Tile('grass', true, "green");
+    const stoneTile = new Tile('stone', false, "grey");
+
+    const treeItem = new Item('tree', false, "🌳");
+    const flowerItem = new Item('flower', true, "🌼");
+    const breadItem = new Item('bread', true, "🍞");
+    const grandmaHouse = new Item('house', true, "🏠")
+
+    const canvas = $("#gameCanvas")[0]
+    const canvasContext = canvas.getContext("2d")
+    canvasContext.imageSmoothingEnabled = false
+    const tile_size = 32
+    const map_size_Y = 15
+    const map_size_X = 30
+
+    let mapComposite = new Map()
+    let mapGrid = []
+
+    function generateMap() {
+        for (let y = 0; y < map_size_Y; y++) {
+            const row = []
+            for (let x = 0; x < map_size_X; x++) {
+                let tile = null
+                let item = null
+
+                if (Math.random() < 0.05) {
+                    tile = stoneTile.clone()
+                } else {
+                    tile = grassTile.clone()
+                    if (Math.random() < 0.2) {
+                        item = treeItem.clone()
+                    }
+                    if (Math.random() < 0.05) {
+                        item = flowerItem.clone()
+                    }
+                    if (Math.random() < 0.02) {
+                        item = breadItem.clone()
+                    }
+                }
+
+                const element = new MapElement(x, y, tile, item)
+                mapComposite.add(element)
+                row.push(element)
+            }
+            mapGrid.push(row)
+        }
+    }
+
+    $(document).on('keydown', function (e) {
+        if (e.code === 'Space') {
+            inputHandler.handleInput('Space');
+        } else {
+            inputHandler.handleInput(e.key);
+        }
+    })
+
+    function gameLoop() {
+        canvasContext.clearRect(0, 0, canvas.width, canvas.height)
+        mapComposite.render()
+        player.render();
+        requestAnimationFrame(gameLoop)
+    }
+
+    let showHouse = false
+    const flower_num = $("#flower_num")
+    const bread_num = $("#bread_num")
+    const msg = $("#msg")
+
+    function randomPosition() {
+        let x, y
+        do {
+            x = Math.floor(Math.random() * map_size_X)
+            y = Math.floor(Math.random() * map_size_Y)
+        } while (!mapGrid[y][x].tile.walkable || mapGrid[y][x].item)
+
+        return {x, y}
+    }
+
+    function updateInventoryUI() {
+        flower_num.text(player.inventory.getCount("flower"))
+        bread_num.text(player.inventory.getCount("bread"))
+        if (!showHouse && player.inventory.getCount("flower") >= 10 && player.inventory.getCount("bread") >= 5) {
+            msg.text("ไปหาคุณยายกันเลยย~")
+            let pos = randomPosition()
+            mapGrid[pos.y][pos.x].item = grandmaHouse.clone()
+            showHouse = true
+        }
+    }
+
+    generateMap()
+    
+    let pos = randomPosition()
+    const player = new Player(pos.x, pos.y)
+    const inputHandler = new InputHandler(player, "")
+
+    updateInventoryUI()
+    gameLoop()
+</script>
+
+</html>

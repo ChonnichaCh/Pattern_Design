@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decorator</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+</head>
+<style>
+    button {
+        width: 100px;
+        height: 50px;
+        cursor: pointer;
+        border: none;
+        border-radius: 10px;
+        color: white;
+    }
+
+    @keyframes shake {
+        0% {
+            transform: translate(0px, 0px);
+        }
+
+        25% {
+            transform: translate(2px, 0px);
+        }
+
+        50% {
+            transform: translate(-2px, 0px);
+        }
+
+        75% {
+            transform: translate(2px, 0px);
+        }
+
+        100% {
+            transform: translate(0px, 0px);
+        }
+    }
+
+    .shaking {
+        animation: shake 0.2s infinite;
+    }
+</style>
+
+<body>
+    <div style="text-align: center; margin-top: 200px;">
+        <h1 id="speed">0</h1>
+        <div>
+            <button id="accelerate" style="background-color: rgb(115, 196, 115);">คันเร่ง</button>
+            <button id="brake" style="background-color: rgb(213, 134, 134);">เบรก</button>
+        </div>
+    </div>
+</body>
+<script>
+    class Button {
+        execute(){}
+    }
+
+    class BaseButton extends Button{
+        constructor(element, action){
+            super()
+            this.element = element
+            this.action = action
+        }
+        execute(){
+            this.action()
+        }
+    }
+
+    class ButtonDecorator extends Button{
+        constructor(button){
+            super()
+            this.button = button
+        }
+        execute(){
+            this.button.execute()
+        }
+    }
+
+    class SoundDecorator extends ButtonDecorator{
+        constructor(button, sound){
+            super(button)
+            this.sound = sound
+        }
+        execute(){
+            new Audio(this.sound).play()
+            super.execute()
+        }
+    }
+
+    class ColorDecorator extends ButtonDecorator{
+        constructor(button, element, condition, color){
+            super(button)
+            this.element = element
+            this.condition = condition
+            this.color = color
+        }
+        execute(){
+            super.execute()
+            if(this.condition()){
+                this.element.css("background-color", this.color)
+            }
+        }
+    }
+
+    class ShakeDecorator extends ButtonDecorator{
+        constructor(button, condition){
+            super(button)
+            this.condition = condition
+        }
+        execute(){
+            this.condition()
+            super.execute()
+        }
+    }
+
+    //main
+    let isAccelerating = false
+    let speed = 0
+    let accelDelay = 400
+    let accelStep = 30
+    let accelInterval, brakeInterval, decelInterval
+
+    let accelerateBtn = new BaseButton($("#accelerate"), ()=>{
+        speed++
+        $("#speed").text(speed)
+    })
+    accelerateBtn = new SoundDecorator(accelerateBtn, '/sound/car-horn.mp3')
+    accelerateBtn = new ColorDecorator(accelerateBtn, $("#accelerate"), ()=> true, "green")
+    accelerateBtn = new ShakeDecorator(accelerateBtn, ()=>{
+        if(speed>=10 && isAccelerating){
+            accelerateBtn.button.button.button.element.addClass("shaking")
+        }else{
+            accelerateBtn.button.button.button.element.removeClass("shaking")
+        }
+    })
+    $("#accelerate").on("mousedown", function(){
+        isAccelerating = true
+        accelDelay = 400
+        const pressAccelerate = ()=>{
+            accelerateBtn.execute()
+            accelDelay = Math.max(50, accelDelay - accelStep)
+            accelInterval = setTimeout(pressAccelerate, accelDelay)
+        }
+        pressAccelerate()
+    }).on("mouseup mouseleave", function(){
+        isAccelerating = false
+        clearTimeout(accelInterval)
+        $(this).css("background-color", "rgb(115, 196, 115)")
+        $(this).removeClass("shaking")
+    })
+
+    brakeBtn = new BaseButton($("#brake"), ()=>{
+        if(speed>0) speed--
+        $("#speed").text(speed)
+    })
+    brakeBtn = new SoundDecorator(brakeBtn, '/sound/brake.mp3')
+    brakeBtn = new ColorDecorator(brakeBtn, $("#brake"), ()=>speed===0, "red")
+
+    $("#brake").on("mousedown", function(){
+        brakeInterval = setInterval(() => brakeBtn.execute(), 150)
+    }).on("mouseup mouseleave", function(){
+        clearInterval(brakeInterval)
+        $(this).css("background-color"," rgb(213, 134, 134)")
+    })
+
+    function startDecelerate() {
+        clearInterval(decelInterval)
+        decelInterval = setInterval(()=>{
+            if(!isAccelerating && speed>0){
+                speed--
+                $("#speed").text(speed)
+            }
+        }, 200)
+    }
+    startDecelerate()
+</script>
+
+</html>

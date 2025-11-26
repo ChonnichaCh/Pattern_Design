@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Game with Facade Pattern - Keyboard + Mouse</title>
+    <style>
+        canvas {
+            background: #222;
+            display: block;
+            margin: auto;
+            margin-top: 100px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+    <script>
+        // ----- Subsystems -----
+        class KeyboardHandler {
+            constructor() {
+                this.keys = new Set();
+                window.addEventListener('keydown', e => this.keys.add(e.key));
+                window.addEventListener('keyup', e => this.keys.delete(e.key));
+            }
+
+            isPressed(key) {
+                return this.keys.has(key);
+            }
+        }
+
+        class MouseHandler {
+            constructor(canvas) {
+                this.state = { left: false, right: false, jump: false };
+                canvas.addEventListener('mousedown', e => this.handleMouse(e));
+                canvas.addEventListener('mouseup', () => this.clearState());
+            }
+
+            handleMouse(event) {
+                const x = event.offsetX;
+                const width = event.target.width;
+                this.clearState();
+
+                if (x < width / 3) {
+                    this.state.left = true;
+                } else if (x > (2 * width) / 3) {
+                    this.state.right = true;
+                } else {
+                    this.state.jump = true;
+                }
+            }
+
+            clearState() {
+                this.state.left = false;
+                this.state.right = false;
+                this.state.jump = false;
+            }
+
+            isLeft() { return this.state.left; }
+            isRight() { return this.state.right; }
+            isJump() { return this.state.jump; }
+        }
+
+        // ----- Facade -----
+        class InputFacade {
+            constructor(canvas) {
+                this.keyboard = new KeyboardHandler();
+                this.mouse = new MouseHandler(canvas);
+            }
+
+            isMoveLeft() {
+                return this.keyboard.isPressed('ArrowLeft') || this.mouse.isLeft();
+            }
+
+            isMoveRight() {
+                return this.keyboard.isPressed('ArrowRight') || this.mouse.isRight();
+            }
+
+            isJump() {
+                return this.keyboard.isPressed(' ') || this.mouse.isJump();
+            }
+        }
+
+        // ----- Game -----
+        class Game {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.input = new InputFacade(this.canvas);
+
+                this.player = { x: 300, y: 350, size: 30, vy: 0 };
+                this.gravity = 0.5;
+
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            gameLoop() {
+                this.update();
+                this.draw();
+                requestAnimationFrame(() => this.gameLoop());
+            }
+
+            update() {
+                if (this.input.isMoveLeft()) this.player.x -= 2;
+                if (this.input.isMoveRight()) this.player.x += 2;
+                if (this.input.isJump() && this.player.y >= 350) {
+                    this.player.vy = -15;
+                }
+
+                this.player.vy += this.gravity;
+                this.player.y += this.player.vy;
+
+                if (this.player.y > 350) {
+                    this.player.y = 350;
+                    this.player.vy = 0;
+                }
+
+                // จำกัดไม่ให้ออกจาก canvas ซ้ายขวา
+                if (this.player.x < 0) this.player.x = 0;
+                if (this.player.x > this.canvas.width - this.player.size)
+                    this.player.x = this.canvas.width - this.player.size;
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.ctx.fillStyle = 'white';
+                this.ctx.fillRect(this.player.x, this.player.y, this.player.size, this.player.size);
+            }
+        }
+
+        // ----- Start Game -----
+        new Game();
+
+
+    </script>
+
+</body>
+
+</html>

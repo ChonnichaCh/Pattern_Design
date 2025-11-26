@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory Method Pattern</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+</head>
+<style>
+    .random {
+        background-color: rgb(0, 152, 28);
+        color: rgb(255, 255, 255);
+        margin: 3%;
+        border: none;
+        border-radius: 50px;
+        padding: 1% 3%;
+        font-size: large;
+    }
+
+    .random-disabled {
+        background-color: rgb(115, 214, 133);
+    }
+
+    .on {
+        border: 2px solid rgb(0, 152, 28);
+    }
+</style>
+
+<body>
+    <h3 class="text-center mb-5" style="margin-top: 10%;;">Weapon Gacha Machine</h3>
+    <div id="weaponList" class="justify-content-center row gap-5" style="margin: 0% 10%;">
+        <div class="card" style="width: 15rem;">
+            <img src="" class="card-img" style="height: 100%; width: 100%; object-fit: cover;">
+            <div class="card-body row">
+                <h5 class="card-title col-7"></h5>
+                <p class="col-5 text-end rarity" style="font-size: 18px;"></p>
+                <p class="col-6">value :</p>
+                <p class="col-6 value"></p>
+                <p class="col-6">type :</p>
+                <p class="col-6 type"></p>
+            </div>
+        </div>
+    </div>
+    <div class="justify-content-center d-flex mt-3">
+        <button id="randomWeapon" class="random">2000 coins</button>
+    </div>
+
+
+    <hr style="margin: 10%;">
+    <h3 class="text-center mb-5">Character Gacha Machine</h3>
+    <div id="characterList" class="justify-content-center row gap-5" style="margin: 0% 10%;">
+        <div class="card" style="width: 15rem;">
+            <img src="" class="card-img" style="height: 100%; width: 100%; object-fit: cover;">
+            <div class="card-body row">
+                <h5 class="card-title col-7"></h5>
+                <p class="col-5 text-end rarity" style="font-size: 18px;"></p>
+                <p class="col-6">value :</p>
+                <p class="col-6 value"></p>
+                <p class="col-6">type :</p>
+                <p class="col-6 type"></p>
+            </div>
+        </div>
+    </div>
+    <div class="justify-content-center d-flex mt-3">
+        <button id="randomCharacter" class="random">3000 coins</button>
+    </div>
+
+
+    <hr style="margin: 10%;">
+    <h3 class="text-center mb-5">Skin Gacha Machine</h3>
+    <div id="skinList" class="justify-content-center row gap-5" style="margin: 0% 10%;">
+        <div class="card" style="width: 15rem;">
+            <img src="" class="card-img" style="height: 250px; width: 100%; object-fit: cover;">
+            <div class="card-body row">
+                <h5 class="card-title col-7"></h5>
+                <p class="col-5 text-end rarity" style="font-size: 18px;"></p>
+                <p class="col-6">value :</p>
+                <p class="col-6 value"></p>
+                <p class="col-6">type :</p>
+                <p class="col-6 type"></p>
+            </div>
+        </div>
+    </div>
+    <div class="justify-content-center d-flex mt-3" style="margin-bottom: 10%;">
+        <button id="randomSkin" class="random">5000 coins</button>
+    </div>
+
+
+    <div class="modal fade" id="reward" tabindex="-1" aria-labelledby="rewardTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rewardTitle">Reward</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-grid justify-content-center"></div>
+                <button id="activate" class="random" style="display: none;">activate</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class Reward {
+            constructor(name, rarity, value, type, src) {
+                if (this.constructor == Reward) {
+                    throw new Error("Abstract class.")
+                }
+                this.name = name
+                this.rarity = rarity
+                this.value = value
+                this.type = type
+                this.src = src
+            }
+
+            show() {
+                throw new Error("method must be implemented.")
+            }
+
+            activate() {
+                throw new Error("method must be implemented.")
+            }
+        }
+
+        class WeaponReward extends Reward {
+            constructor(name, level, rarity, value, type, src) {
+                super(name, rarity, value, type, src)
+                this.level = level
+            }
+
+            show() {
+                console.log(`{name: ${this.name}, rarity: ${this.rarity}, value: ${this.value}, type: ${this.type}}, level:${this.level}`)
+            }
+
+            activate() {
+                this.level += 1;
+                this.value += 500;
+                console.log(`${this.name} enhanced to level ${this.level}`)
+            }
+        }
+
+        class CharacterReward extends Reward {
+            constructor(name, specialSkill, rarity, value, type, src) {
+                super(name, rarity, value, type, src)
+                this.specialSkill = specialSkill
+            }
+
+            show() {
+                console.log(`{name: ${this.name}, rarity: ${this.rarity}, value: ${this.value}, type: ${this.type}}, special skill:${this.specialSkill}`)
+            }
+
+            activate() {
+                console.log(`${this.name} used skill: ${this.specialSkill}`)
+            }
+        }
+
+        class SkinReward extends Reward {
+            constructor(name, theme, rarity, value, type, src) {
+                super(name, rarity, value, type, src)
+                this.theme = theme
+            }
+
+            show() {
+                console.log(`{name: ${this.name}, rarity: ${this.rarity}, value: ${this.value}, type: ${this.type}}, theme:${this.theme}`)
+            }
+
+            activate() {
+                this.level += 1;
+                this.value += 500;
+                console.log(`${this.name} applied skin: ${this.theme}`)
+            }
+        }
+
+        class GachaMachine {
+            constructor() {
+                if (this.constructor == GachaMachine) {
+                    throw new Error("Abstract class.")
+                }
+            }
+
+            getReward() {
+                throw new Error("method must be implemented.")
+            }
+
+            rarityRates() {
+                let random = Math.random().toFixed(1)
+                if (random < 0.1) {
+                    return null
+                }
+                else if (random < 0.5) {
+                    return "R"
+                }
+                else if (random < 1.0) {
+                    return "SR"
+                }
+                else if (random == 1.0) {
+                    return "SSR"
+                }
+            }
+        }
+
+
+        class WeaponGachaMachine extends GachaMachine {
+            weapon = [
+                { "name": "sword", "rarity": "R", "value": 2000, "src": "https://i.pinimg.com/736x/9f/47/36/9f473642eeeb4cb9ee1ac9ac18d178aa.jpg" },
+                { "name": "bow", "rarity": "SR", "value": 2500, "src": "https://i.pinimg.com/736x/20/4c/50/204c503ba790b96bab186190897f4f9b.jpg" }
+            ]
+            extension = { "level": [1, 2, 3, 4, 5] }
+
+            getReward() {
+                let rarity = super.rarityRates()
+                if (!rarity) return null
+
+                let filter = this.weapon.filter(item => item.rarity === rarity)
+                if (filter.length === 0) return null
+                let randomIndex = Math.floor(Math.random() * (filter.length))
+
+                let name = filter[randomIndex].name
+                let value = filter[randomIndex].value
+                let src = filter[randomIndex].src
+
+                randomIndex = Math.floor(Math.random() * (this.extension.level.length))
+                let level = this.extension.level[randomIndex]
+
+                return new WeaponReward(name, level, rarity, value, "weapon", src)
+            }
+        }
+
+
+        class CharacterGachaMachine extends GachaMachine {
+            character = [
+                { "name": "monica", "specialSkill": "fly", "rarity": "R", "value": 3500, "src": "https://i.pinimg.com/736x/b7/0b/e3/b70be3de8acdc778f84dd7ff68b4b3e5.jpg" },
+                { "name": "jessica", "specialSkill": "teleport", "rarity": "SR", "value": 4000, "src": "https://i.pinimg.com/736x/1f/d9/9b/1fd99ba799c746652c64b455ecece105.jpg" }
+            ]
+
+            getReward() {
+                let rarity = super.rarityRates()
+                if (!rarity) return null
+
+                let filter = this.character.filter(item => item.rarity === rarity)
+                if (filter.length === 0) return null
+                let randomIndex = Math.floor(Math.random() * (filter.length))
+
+                let name = filter[randomIndex].name
+                let specialSkill = filter[randomIndex].specialSkill
+                let value = filter[randomIndex].value
+                let src = filter[randomIndex].src
+
+                return new CharacterReward(name, specialSkill, rarity, value, "character", src)
+            }
+        }
+
+
+        class SkinGachaMachine extends GachaMachine {
+            skinTheme = [
+                { "name": "monica", "theme": "clown", "rarity": "SSR", "value": 9000, "src": "https://i.pinimg.com/736x/30/25/6f/30256fe9afe203070b325ec2d1a13f45.jpg" },
+                { "name": "monica", "theme": "cyber", "rarity": "SR", "value": 6200, "src": "https://i.pinimg.com/736x/97/43/e8/9743e84d029a508c8e0869d1edaa20da.jpg" },
+                { "name": "jessica", "theme": "cyber", "rarity": "SR", "value": 7100, "src": "https://i.pinimg.com/736x/5e/a0/37/5ea037e65cc343ddd7868cb3277edd14.jpg" },
+                { "name": "monica", "theme": "fairy", "rarity": "R", "value": 5000, "src": "https://i.pinimg.com/736x/33/bd/1e/33bd1e7ceae3afc2d12263d7db3c715d.jpg" },
+                { "name": "jessica", "theme": "fairy", "rarity": "R", "value": 5000, "src": "https://i.pinimg.com/736x/e4/59/91/e4599131e7aaf41a0d18d3235e5532d5.jpg" },
+                { "name": "monica", "theme": "samurai", "rarity": "SR", "value": 5500, "src": "https://i.pinimg.com/736x/56/43/1f/56431fc351e5b1bfaccfa067f366a34e.jpg" },
+                { "name": "jessica", "theme": "samurai", "rarity": "SR", "value": 8400, "src": "https://i.pinimg.com/736x/99/bc/72/99bc72d3d4cce8bee39952b09c193208.jpg" }
+            ]
+
+            getReward() {
+                let rarity = super.rarityRates()
+                if (!rarity) return null
+
+                let filter = this.skinTheme.filter(item => item.rarity === rarity)
+                if (filter.length === 0) return null
+                let randomIndex = Math.floor(Math.random() * (filter.length))
+
+                let name = filter[randomIndex].name
+                let theme = filter[randomIndex].theme
+                let value = filter[randomIndex].value
+                let src = filter[randomIndex].src
+
+                return new SkinReward(name, theme, rarity, value, "skin", src)
+            }
+        }
+
+        $(document).ready(function () {
+            function spin($items, rewardIndex, delay, step, maxDelay, reward) {
+                if (currentIndex !== -1) {
+                    $items.eq(currentIndex).removeClass("on")
+                }
+
+                currentIndex = (currentIndex + 1) % $items.length // ใช้ modulo % เพื่อให้วนกลับไปที่ตัวแรกเมื่อนับถึงตัวสุดท้าย
+                $items.eq(currentIndex).addClass("on")
+
+                tickSound.currentTime = 0
+                tickSound.play()
+
+                if (delay >= maxDelay && currentIndex === rewardIndex) {
+                    spinning = false;
+                    $("#reward").find(".modal-body").empty()
+                    let p = $("<p class=\"text-center mt-2\"></p>")
+                    $("#reward").find(".modal-body").append($items.eq(currentIndex).clone())
+                    $("#reward").find(".modal-body").append(p)
+
+                    if (reward.type === "weapon") {
+                        p.text("level : " + reward.level)
+                        $("#activate").text("enhanced")
+                        $("#activate").show()
+                        $("#activate").off("click").on("click", function () {
+                            $("#activate").hide()
+                            reward.activate()
+                            $("#reward").find(".modal-body").empty()
+                            let img = $("<img src=\"https://i.pinimg.com/236x/ed/99/13/ed9913fea5064d58fc6005ed26d50dca.jpg\">")
+                            $("#reward").find(".modal-body").append(img)
+                            p.text("level : " + reward.level)
+                            sword.play()
+
+                            setTimeout(() => {
+                                bell.currentTime = 0
+                                bell.play()
+                                $("#reward").find(".modal-body").empty()
+                                $("#reward").find(".modal-body").append($items.eq(currentIndex).clone())
+                                $("#reward").find(".modal-body").append(p)
+                                $("#activate").show()
+                            }, 2000)
+                        })
+                    } else if (reward.type === "character") {
+                        p.text("special sill : " + reward.specialSkill)
+                        $("#activate").text("use skill")
+                        $("#activate").show()
+                        $("#activate").off("click").on("click", function () {
+                            $("#activate").hide()
+                            reward.activate()
+                            $("#reward").find(".modal-body").empty()
+                            if (reward.name === "monica") {
+                                let img = $("<img src=\"https://1.bp.blogspot.com/-AR-QtK7dx2M/VxAG-YrG8PI/AAAAAAAAcC4/_abNL3ZkaTEK2DKYdR0JP46LgzBKiDBTgCKgB/s1600/Screen%2BShot%2B2016-04-14%2Bat%2B22.08.18.png\" style=\"width: 20rem; object-fit: cover;\">")
+                                $("#reward").find(".modal-body").append(img)
+                                pop.play()
+                            } else if (reward.name === "jessica") {
+                                let img = $("<img src=\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe7fBdCyGlRihGmXYOyq8AWXviUAYAKJOWug&usqp=CAU\" style=\"width: 20rem; object-fit: cover;\">")
+                                $("#reward").find(".modal-body").append(img)
+                                setTimeout(() => {
+                                    pop.play()
+                                }, 1000)
+                            }
+
+                            setTimeout(() => {
+                                $("#reward").find(".modal-body").empty()
+                                $("#reward").find(".modal-body").append($items.eq(currentIndex).clone())
+                                $("#reward").find(".modal-body").append(p)
+                                $("#activate").show()
+                            }, 1300)
+                        })
+                    } else if (reward.type === "skin") {
+                        p.text("theme : " + reward.theme)
+                        $("#activate").text("applied skin")
+                        $("#activate").show()
+                        $("#activate").off("click").on("click", function () {
+                            $("#activate").hide()
+                            reward.activate()
+                            $("#reward").find(".modal-body").empty()
+                            let img = $("<img src=\"https://i.pinimg.com/1200x/11/bf/5d/11bf5d1c8252e198f79c83d73f212619.jpg\" style=\"width: 20rem; object-fit: cover;\">")
+                            p.text("applied skin success!")
+                            $("#reward").find(".modal-body").append(img)
+                            $("#reward").find(".modal-body").append(p)
+                            twinkle.play()
+                        })
+                    }
+
+                    setTimeout(() => {
+                        tadaSound.currentTime = 0.5
+                        tadaSound.play()
+                        $("#reward").modal('show')
+                        randomButton.removeClass("random-disabled")
+                    }, 1000)
+                    return
+                } else if (delay >= maxDelay && rewardIndex === null) {
+                    spinning = false;
+                    $items.eq(currentIndex).removeClass("on")
+                    $("#activate").hide()
+                    $("#reward").find(".modal-body").empty()
+                    let img = $("<img src=\"https://i.pinimg.com/736x/03/cf/c4/03cfc4318981df5ece1388bca466fbca.jpg\" style=\"width: 15rem; object-fit: cover;\">")
+                    let p = $("<p class=\"text-center mt-2\">500 coins</p>")
+                    $("#reward").find(".modal-body").append(img)
+                    $("#reward").find(".modal-body").append(p)
+
+                    setTimeout(() => {
+                        laughSound.currentTime = 0.5
+                        laughSound.play()
+                        $("#reward").modal('show')
+                        randomButton.removeClass("random-disabled")
+                    }, 1000)
+                    return
+                }
+
+                delay += step
+                setTimeout(() => {
+                    spin($items, rewardIndex, delay, step, maxDelay, reward)
+                }, delay)
+            }
+
+            let coinSound = new Audio('/sound/coin.mp3')
+            let tickSound = new Audio('/sound/tick.mp3')
+            let tadaSound = new Audio('/sound/tada-meme.mp3')
+            let laughSound = new Audio('/sound/evil-laugh.mp3')
+            let sword = new Audio('/sound/sword.mp3')
+            let bell = new Audio('/sound/bell-ding.mp3')
+            let pop = new Audio('/sound/pop-up.mp3')
+            let twinkle = new Audio('/sound/magical-twinkle.mp3')
+            let spinning = false
+            let currentIndex = -1;
+            let randomButton = $(".random")
+            let weaponList = $("#weaponList")
+            var card = weaponList.children()
+            weaponList.empty()
+            weaponGachaMachine = new WeaponGachaMachine()
+            for (item of weaponGachaMachine.weapon) {
+                let cardItem = card.clone()
+                cardItem.find("img").attr("src", item.src)
+                cardItem.find("h5").text(item.name)
+                cardItem.find(".rarity").text(item.rarity)
+                cardItem.find(".value").text(item.value)
+                cardItem.find(".type").text("weapon")
+                weaponList.append(cardItem)
+            }
+
+            $("#randomWeapon").on("click", function () {
+                if (spinning) return; // ถ้ากำลังหมุนอยู่ ไม่ให้เริ่มใหม่
+                coinSound.play()
+                randomButton.addClass("random-disabled")
+                spinning = true;
+                const $weapon = $(weaponList).children()
+                var count = -1
+                let rewardIndex = null
+
+                let reward = weaponGachaMachine.getReward()
+                if (reward) {
+                    $weapon.each(function () {
+                        count++
+                        if ($(this).find("h5").text() === reward.name) {
+                            rewardIndex = count
+                        }
+                    })
+                    reward.show()
+                }
+                else {
+                    console.log("no reward")
+                }
+
+                let delay = 10;
+                let step = 10;
+                let maxDelay = 400;
+
+                spin($weapon, rewardIndex, delay, step, maxDelay, reward)
+            })
+
+            let characterList = $("#characterList")
+            var card = characterList.children()
+            characterList.empty()
+
+            characterGachaMachine = new CharacterGachaMachine()
+            for (item of characterGachaMachine.character) {
+                let cardItem = card.clone()
+                cardItem.find("img").attr("src", item.src)
+                cardItem.find("h5").text(item.name)
+                cardItem.find(".rarity").text(item.rarity)
+                cardItem.find(".value").text(item.value)
+                cardItem.find(".type").text("character")
+                characterList.append(cardItem)
+            }
+
+            $("#randomCharacter").on("click", function () {
+                if (spinning) return; // ถ้ากำลังหมุนอยู่ ไม่ให้เริ่มใหม่
+                coinSound.play()
+                randomButton.addClass("random-disabled")
+                spinning = true;
+                const $characters = $(characterList).children()
+                var count = -1
+                let rewardIndex = null
+
+                let reward = characterGachaMachine.getReward()
+                if (reward) {
+                    $characters.each(function () {
+                        count++
+                        if ($(this).find("h5").text() === reward.name) {
+                            rewardIndex = count
+                        }
+                    })
+                    reward.show()
+                }
+                else {
+                    console.log("no reward")
+                }
+
+                let delay = 10;
+                let step = 10;
+                let maxDelay = 400;
+
+                spin($characters, rewardIndex, delay, step, maxDelay, reward)
+            })
+
+
+
+            let skinList = $("#skinList")
+            var card = skinList.children()
+            skinList.empty()
+
+            skinGachaMachine = new SkinGachaMachine()
+            for (item of skinGachaMachine.skinTheme) {
+                let cardItem = card.clone()
+                cardItem.find("img").attr("src", item.src)
+                cardItem.find("h5").text(item.theme + " " + item.name)
+                cardItem.find(".rarity").text(item.rarity)
+                cardItem.find(".value").text(item.value)
+                cardItem.find(".type").text("skin")
+                skinList.append(cardItem)
+            }
+
+            $("#randomSkin").on("click", function () {
+                if (spinning) return; // ถ้ากำลังหมุนอยู่ ไม่ให้เริ่มใหม่
+                coinSound.play()
+                randomButton.addClass("random-disabled")
+                spinning = true;
+                const $skins = $(skinList).children()
+                var count = -1
+                let rewardIndex = null
+
+                let reward = skinGachaMachine.getReward()
+                if (reward) {
+                    $skins.each(function () {
+                        count++
+                        if ($(this).find("h5").text() === reward.theme + " " + reward.name) {
+                            rewardIndex = count
+                        }
+                    })
+                    reward.show()
+                }
+                else {
+                    console.log("no reward")
+                }
+
+                let delay = 10;
+                let step = 10;
+                let maxDelay = 400;
+
+                spin($skins, rewardIndex, delay, step, maxDelay, reward)
+            })
+
+        })
+
+    </script>
+</body>
+
+</html>

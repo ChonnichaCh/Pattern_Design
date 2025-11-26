@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proxy</title>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+</head>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    background-color: gray;
+  }
+</style>
+
+<body>
+  <div id="map" style="width: 100vw; height: 100vh; overflow: hidden; background-color: white; position: relative;">
+    <div id="box" style="position: absolute; pointer-events: none; z-index: 1; border: 1px solid black;"></div>
+  </div>
+</body>
+<script>
+  class Item {
+    request(mouseX, mouseY) {
+      throw new Error("method meust be implemented.")
+    }
+  }
+
+  class RealItem extends Item {
+    constructor(modelName, $element) {
+      super()
+      this.modelName = modelName
+      this.$element = $element
+    }
+
+    request() {
+      this.$element.children("img").attr("src", model[this.modelName])
+    }
+  }
+
+  class ProxyItem extends Item {
+    constructor(x, y, modelName) {
+      super()
+      this.x = x
+      this.y = y
+      this.modelName = modelName
+      this.$element = $('<div> <img> </div>').css({ "position": "absolute", left: x + "px", top: y + "px" })
+
+      this.realItem = null
+      $map.append(this.$element)
+    }
+
+    render(mouseX, mouseY) {
+      let boxXL = mouseX - boxW
+      let boxXR = mouseX + boxW / 2
+      let boxYT = mouseY - boxH - 50
+      let boxYB = mouseY + boxH / 2
+
+      if (this.x >= boxXL && this.x <= boxXR && this.y >= boxYT && this.y <= boxYB) {
+        if(!this.realItem){
+          this.realItem = new RealItem(this.modelName, this.$element)
+        }
+        this.realItem.request()
+      } else {
+        this.realItem = null
+        this.request()
+      }
+    }
+
+    request() {
+      this.$element.children("img").attr("src", "")
+    }
+  }
+
+
+  //main
+  const $map = $("#map")
+  const $box = $("#box")
+  const model = { bunny: "/sound/bunny.jpg", jerry: "/sound/jerry.jpg" }
+  const num = 10
+  const boxW = 300
+  const boxH = 200
+  $box.css({ width: boxW + "px", height: boxH + "px" })
+
+  const items = []
+  for (let i = 0; i < num; i++) {
+    let x = Math.random().toFixed(1) * $(window).width()
+    let y = Math.random().toFixed(1) * $(window).height()
+    let item = ""
+    if (Math.random().toFixed(1) < 0.6) {
+      item = "bunny"
+    } else {
+      item = "jerry"
+    }
+    items.push(new ProxyItem(x, y, item))
+  }
+
+  function updateBox(x, y) {
+    $box.css({ left: (x - 150) + "px", top: (y - 100) + "px" })
+  }
+
+  $(window).on("mousemove", function (e) {
+    updateBox(e.clientX, e.clientY)
+    items.forEach(item => item.render(e.clientX, e.clientY))
+  })
+
+  updateBox($(window).width() / 2, $(window).height() / 2)
+  items.forEach(item => item.render($(window).width() / 2, $(window).height() / 2))
+</script>
+
+</html>

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memento</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+</head>
+<style>
+    .button {
+        background-color: black;
+        color: white;
+    }
+
+    .long-hair {
+        height: 200px;
+        width: 150px;
+    }
+
+    .bob-hair {
+        height: 110px;
+        width: 150px;
+    }
+
+    .a-eye {
+        width: 20px;
+        height: 20px;
+    }
+
+    .b-eye {
+        width: 20px;
+        height: 5px;
+        margin-top: 10px;
+    }
+
+    .a-mouth {
+        width: 25px;
+        height: 5px;
+    }
+
+    .b-mouth {
+        width: 5px;
+        height: 5px;
+    }
+
+    .hat #div1 {
+        height: 50px;
+        width: 100px;
+        background-color: darkblue;
+    }
+
+    .hat #div2 {
+        height: 15px;
+        width: 150px;
+        background-color: darkblue;
+    }
+
+    .headband #div2 {
+        height: 15px;
+        width: 150px;
+        background-color: hotpink;
+    }
+
+    .hair-clip #div1 {
+        height: 5px;
+        width: 20px;
+        background-color: yellow;
+        position: absolute;
+        margin-top: 10px;
+        margin-left: 80px;
+    }
+
+    .hair-clip #div2 {
+        height: 5px;
+        width: 20px;
+        background-color: orange;
+        position: absolute;
+        margin-top: 15px;
+        margin-left: 80px;
+    }
+</style>
+
+<body>
+    <div style="justify-content: center; text-align: center; margin-top: 100px; display: grid;">
+        <h>ปรับแต่งตัวละคร</h>
+
+        <div style="justify-items: center; display: grid; margin-top: 5%;">
+            <div id="decoration" style="cursor: pointer; justify-items: center; display: grid;">
+                <div id="div1"></div>
+                <div id="div2"></div>
+            </div>
+            <div id="hair" style="justify-items: center;display: grid;">
+                <div
+                    style="background-color: rgb(251, 239, 216); width: 100px; height: 80px;position: relative; top: 25px;">
+                    <div style="justify-content: space-between; display: flex; margin: 25px 20px 13px;">
+                        <div id="eyel"></div>
+                        <div id="eyer"></div>
+                    </div>
+                    <div style="justify-content: center; display: flex;">
+                        <div id="mouth" style="background-color: rgb(241, 130, 130); "></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <button id="undo">undo</button>
+            <button id="redo">redo</button>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <span>หน้า-ผม</span>
+            <button id="face-reset">reset</button>
+        </div>
+
+        <div style="margin-top: 40px;">
+            <span>ของตกแต่ง</span>
+            <button id="de-reset">reset</button>
+        </div>
+
+        <div style="margin-top: 50px; width: 500px;">
+            <button id="hair-style">ทรงผม</button>
+            <button id="hair-color">สีผม</button>
+            <button id="eyes-style">ทรงตา</button>
+            <button id="eyes-color">สีตา</button>
+            <button id="mouth-style">ปาก</button>
+            <button id="decorate">ตกแต่ง</button>
+
+            <div id="decorations" style="display: none;">
+                <div style="justify-content: space-between; display: flex; margin-top: 60px;">
+                    <div id="hat" class="hat" style="cursor: pointer; justify-items: center; display: grid;">
+                        <div id="div1"></div>
+                        <div id="div2"></div>
+                    </div>
+                    <div id="headband" class="headband" style="cursor: pointer; justify-items: center; display: grid;">
+                        <div id="div1"></div>
+                        <div id="div2"></div>
+                    </div>
+                    <div id="hair-clip" class="hair-clip"
+                        style="cursor: pointer; justify-items: center; display: grid;">
+                        <div id="div1"></div>
+                        <div id="div2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="hairStyle" style="display: none;">
+                <div style="justify-content: space-between; display: flex; margin-top: 60px;">
+                    <div id="long-hair" class="long-hair"
+                        style="background-color: black; color: white; cursor: pointer;">
+                        long hair</div>
+                    <div id="bob-hair" class="bob-hair" style="background-color: black; color: white; cursor: pointer;">
+                        bob
+                        hair</div>
+                </div>
+            </div>
+            <div id="eyesStyle" style="display: none;">
+                <div style="justify-content: space-between; display: flex; margin-top: 30px; padding: 0 100px;">
+                    <div id="a-eye"
+                        style="justify-content: space-between; display: flex; margin: 25px 20px; width: 70px; cursor: pointer;">
+                        <div class="a-eye" style="background-color: black;"></div>
+                        <div class="a-eye" style="background-color: black;"></div>
+                    </div>
+                    <div id="b-eye"
+                        style="justify-content: space-between; display: flex; margin: 25px 20px; width: 70px; cursor: pointer">
+                        <div class="b-eye" style="background-color: black;"></div>
+                        <div class="b-eye" style="background-color: black;"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="mouthStyle" style="display: none;">
+                <div style="justify-content: space-between; display: flex; margin-top: 60px; padding: 0 150px;">
+                    <div id="a-mouth" class="a-mouth" style="background-color: rgb(241, 130, 130); cursor: pointer;">
+                    </div>
+                    <div id="b-mouth" class="b-mouth" style="background-color: rgb(241, 130, 130); cursor: pointer;">
+                    </div>
+                </div>
+            </div>
+            <div id="color" style="display: none;">
+                <div style="justify-content: space-between; display: flex; margin-top: 60px;">
+                    <div id="black" style="background-color: black;cursor: pointer; width: 30px; height: 30px;">
+                    </div>
+                    <div id="red" style="background-color: red; cursor: pointer; width: 30px; height: 30px;"></div>
+                    <div id="blue"
+                        style="background-color: cornflowerblue; cursor: pointer; width: 30px; height: 30px;"></div>
+                    <div id="pink" style="background-color: pink; cursor: pointer; width: 30px; height: 30px;">
+                    </div>
+                    <div id="green" style="background-color: darkgreen; cursor: pointer; width: 30px; height: 30px;">
+                    </div>
+                    <div id="orange" style="background-color: orange; cursor: pointer; width: 30px; height: 30px;">
+                    </div>
+                    <div id="skyblue" style="background-color: skyblue; cursor: pointer; width: 30px; height: 30px;">
+                    </div>
+                    <div id="powderblue"
+                        style="background-color: powderblue; cursor: pointer; width: 30px; height: 30px;"></div>
+                    <div id="tomato" style="background-color: tomato; cursor: pointer; width: 30px; height: 30px;">
+                    </div>
+                    <div id="yellow" style="background-color: yellow; cursor: pointer; width: 30px; height: 30px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script>
+    class Originator {
+        save() {
+            throw new Error("method must be implemented.")
+        }
+        restore(memento) {
+            throw new Error("method must be implemented.")
+        }
+    }
+
+    class Character extends Originator {
+        constructor(detail, decorate) {
+            super()
+            this.detail = detail
+            this.decorate = decorate
+            this.updateUI()
+        }
+        customize(detail) {
+            this.detail = detail
+            this.updateUI()
+        }
+        setDecorate(decorate) {
+            this.decorate = decorate
+            this.updateUI()
+        }
+        save(type) {
+            if (type === "character") {
+                return new CharacterMemento(this.detail)
+            } else if (type === "decorate") {
+                return new DecorateMemento(this.decorate)
+            }
+        }
+        restore(memento) {
+            if (memento instanceof CharacterMemento) {
+                this.customize(memento.getDetail())
+            }
+            else if (memento instanceof DecorateMemento) {
+                this.setDecorate(memento.getDecorate())
+            }
+        }
+        updateUI() {
+            $("#decoration").removeClass()
+            $("#decoration").addClass(this.decorate)
+            $("#hair").removeClass()
+            $("#hair").addClass(this.detail.hairStyle)
+            $("#hair").css("background-color", this.detail.hairColor)
+            $("#eyel").removeClass()
+            $("#eyel").addClass(this.detail.eyesStyle)
+            $("#eyel").css("background-color", this.detail.eyesColor)
+            $("#eyer").removeClass()
+            $("#eyer").addClass(this.detail.eyesStyle)
+            $("#eyer").css("background-color", this.detail.eyesColor)
+            $("#mouth").removeClass()
+            $("#mouth").addClass(this.detail.mouth)
+        }
+    }
+
+    class Memento {
+        show() {
+            throw new Error("method must be implemented.")
+        }
+    }
+
+    class CharacterMemento extends Memento {
+        constructor(detail) {
+            super()
+            this.detail = detail
+            this.timeStamp = new Date().toLocaleString()
+        }
+
+        getDetail() {
+            return this.detail
+        }
+
+        show() {
+            console.log("detail at time " + this.timeStamp + " : " + JSON.stringify(this.detail))
+        }
+    }
+
+    class DecorateMemento extends Memento {
+        constructor(decorate) {
+            super()
+            this.decorate = decorate
+            this.timeStamp = new Date().toLocaleString()
+        }
+
+        getDecorate() {
+            return this.decorate
+        }
+
+        show() {
+            console.log("decorate at time " + this.timeStamp + " : " + this.decorate)
+        }
+    }
+
+    class Caretaker {
+        constructor() {
+            this.history = []
+            this.future = []
+        }
+
+        save(memento) {
+            if (this.history.length > 0) {
+                if (memento instanceof CharacterMemento) {
+                    let m = { "characterMemento": memento, "decoraterMemento": this.history[this.history.length - 1].decoraterMemento }
+                    this.history.push(m)
+                    console.log(this.history)
+                }
+                else if (memento instanceof DecorateMemento) {
+                    let m = { "characterMemento": this.history[this.history.length - 1].characterMemento, "decoraterMemento": memento }
+                    this.history.push(m)
+                    console.log(this.history)
+                }
+            } else {
+                if (memento instanceof CharacterMemento) {
+                    let m = { "characterMemento": memento, "decoraterMemento": 0 }
+                    this.history.push(m)
+                    console.log(this.history)
+                }
+                else if (memento instanceof DecorateMemento) {
+                    let m = { "characterMemento": 0, "decoraterMemento": memento }
+                    this.history.push(m)
+                    console.log(this.history)
+                }
+            }
+            this.future = []
+        }
+        undo() {
+            if (this.history.length > 2) {
+                this.future.push(this.history.pop())
+                this.history[this.history.length - 1].characterMemento.show()
+                this.history[this.history.length - 1].decoraterMemento.show()
+                return this.history[this.history.length - 1]
+            }
+            return null
+        }
+        redo() {
+            if (this.future.length > 0) {
+                let m = this.future.pop()
+                this.history.push(m)
+                m.characterMemento.show()
+                m.decoraterMemento.show()
+                return m
+            }
+            return null
+        }
+    }
+
+    $(document).ready(function () {
+        const detail = { "hairStyle": "long-hair", "hairColor": "black", "eyesStyle": "a-eye", "eyesColor": "lightskyblue", "mouth": "a-mouth" }
+        const decorate = "hat"
+        let character = new Character(detail, decorate)
+        let caretaker = new Caretaker()
+        caretaker.save(character.save("character"))
+        caretaker.save(character.save("decorate"))
+
+        $("#undo").on("click", function () {
+            mementos = caretaker.undo()
+            if(mementos){
+                character.restore(mementos.characterMemento)
+                character.restore(mementos.decoraterMemento)
+            }
+        })
+
+        $("#redo").on("click", function () {
+            mementos = caretaker.redo()
+            if(mementos){
+                character.restore(mementos.characterMemento)
+                character.restore(mementos.decoraterMemento)
+            }
+        })
+
+        $("#face-reset").on("click", function () {
+            character.customize(detail)
+            caretaker.save(character.save("character"))
+        })
+
+        $("#de-reset").on("click", function () {
+            character.setDecorate(decorate)
+            caretaker.save(character.save("decorate"))
+        })
+
+        $("#decorate").on("click", function () {
+            $(this).addClass("button")
+            $("#hair-style").removeClass()
+            $("#hair-color").removeClass()
+            $("#eyes-style").removeClass()
+            $("#eyes-color").removeClass()
+            $("#mouth-style").removeClass()
+            $("#decorations").show()
+            $("#hairStyle").hide()
+            $("#color").hide()
+            $("#eyesStyle").hide()
+            $("#mouthStyle").hide()
+            $("#hat").off().on("click", function () {
+                let decorate = "hat"
+                character.setDecorate(decorate)
+                caretaker.save(character.save("decorate"))
+            })
+            $("#headband").off().on("click", function () {
+                let decorate = "headband"
+                character.setDecorate(decorate)
+                caretaker.save(character.save("decorate"))
+            })
+            $("#hair-clip").off().on("click", function () {
+                let decorate = "hair-clip"
+                character.setDecorate(decorate)
+                caretaker.save(character.save("decorate"))
+            })
+        })
+
+        $("#hair-style").on("click", function () {
+            $(this).addClass("button")
+            $("#decorate").removeClass()
+            $("#hair-color").removeClass()
+            $("#eyes-style").removeClass()
+            $("#eyes-color").removeClass()
+            $("#mouth-style").removeClass()
+            $("#hairStyle").show()
+            $("#decorations").hide()
+            $("#color").hide()
+            $("#eyesStyle").hide()
+            $("#mouthStyle").hide()
+            $("#long-hair").off().on("click", function () {
+                let detail = { "hairStyle": "long-hair", "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#bob-hair").off().on("click", function () {
+                let detail = { "hairStyle": "bob-hair", "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+        })
+        $("#hair-color").on("click", function () {
+            $(this).addClass("button")
+            $("#decorate").removeClass()
+            $("#hair-style").removeClass()
+            $("#eyes-style").removeClass()
+            $("#eyes-color").removeClass()
+            $("#mouth-style").removeClass()
+            $("#color").show()
+            $("#decorations").hide()
+            $("#hairStyle").hide()
+            $("#eyesStyle").hide()
+            $("#mouthStyle").hide()
+            $("#black").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "black", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#red").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "red", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#blue").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "cornflowerblue", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#pink").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "pink", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#green").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "darkgreen", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#orange").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "orange", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#skyblue").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "skyblue", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#powderblue").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "powderblue", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#tomato").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "tomato", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#yellow").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": "yellow", "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+        })
+
+        $("#eyes-style").on("click", function () {
+            $(this).addClass("button")
+            $("#decorate").removeClass()
+            $("#hair-color").removeClass()
+            $("#hair-style").removeClass()
+            $("#eyes-color").removeClass()
+            $("#mouth-style").removeClass()
+            $("#eyesStyle").show()
+            $("#decorations").hide()
+            $("#hairStyle").hide()
+            $("#color").hide()
+            $("#mouthStyle").hide()
+            $("#a-eye").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": "a-eye", "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#b-eye").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": "b-eye", "eyesColor": character.detail.eyesColor, "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+        })
+        $("#eyes-color").on("click", function () {
+            $(this).addClass("button")
+            $("#decorate").removeClass()
+            $("#hair-color").removeClass()
+            $("#eyes-style").removeClass()
+            $("#hair-style").removeClass()
+            $("#mouth-style").removeClass()
+            $("#color").show()
+            $("#decorations").hide()
+            $("#hairStyle").hide()
+            $("#eyesStyle").hide()
+            $("#mouthStyle").hide()
+            $("#black").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "black", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#red").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "red", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#blue").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "cornflowerblue", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#pink").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "pink", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#green").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "darkgreen", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#orange").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "orange", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#skyblue").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "skyblue", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#powderblue").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "powderblue", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#tomato").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "tomato", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#yellow").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": "yellow", "mouth": character.detail.mouth }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+        })
+        $("#mouth-style").on("click", function () {
+            $(this).addClass("button")
+            $("#decorate").removeClass()
+            $("#hair-color").removeClass()
+            $("#eyes-style").removeClass()
+            $("#eyes-color").removeClass()
+            $("#hair-style").removeClass()
+            $("#mouthStyle").show()
+            $("#decorations").hide()
+            $("#color").hide()
+            $("#eyesStyle").hide()
+            $("#hairStyle").hide()
+            $("#a-mouth").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": "a-mouth" }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+            $("#b-mouth").off().on("click", function () {
+                let detail = { "hairStyle": character.detail.hairStyle, "hairColor": character.detail.hairColor, "eyesStyle": character.detail.eyesStyle, "eyesColor": character.detail.eyesColor, "mouth": "b-mouth" }
+                character.customize(detail)
+                caretaker.save(character.save("character"))
+            })
+        })
+    })
+</script>
+
+</html>
